@@ -5,8 +5,13 @@ from django.views.decorators.csrf import csrf_exempt
 import random,string
 import uuid
 from django.contrib.auth.models import User
+
 from .models import Room, Message
 from .serializers import RoomSerializer, MessageSerializer
+
+from .connection import connection,get_event_id
+from .population import targeted_population
+
 #view to create a new room with a unique room link with admin
 
 @csrf_exempt
@@ -17,13 +22,12 @@ def create_room(request):
     room_name = f"{user_name}_{admin_name}_{uuid.uuid4().hex[:6].upper()}"
     room_link = str(uuid.uuid4())
     #check if user exists
-    if User.objects.filter(username=user_name).exists():
+    try:
+        user = User.objects.get(username=user_name)
         room = Room.objects.create(room_name=room_name, admin_name=admin_name, user_name=user_name, room_link=room_link)
-
         serializer = RoomSerializer(room)
-
         return Response({"New Room Created":serializer.data})
-    else:
+    except:
         return Response({"Error":"User does not exist"})
 
 
@@ -34,14 +38,14 @@ def create_room(request):
 def add_member(request):
     user_name =  request.data['user_name']
     room_link = request.data['room_link']
-    room = Room.objects.get(room_link=room_link)
-    user = User.objects.get(username=user_name)
-    if user.exists():
+    try:
+        room = Room.objects.get(room_link=room_link)
+        user = User.objects.get(username=user_name)
         room.add_members(user)
         serializer = RoomSerializer(room)
         return Response({"New Member Added":serializer.data})
-    else:
-        return Response({"Error":"User does not exist"})
+    except:
+        return Response({"Error":"User or Room does not exist"})
 
 #send message to the room
 @csrf_exempt
@@ -50,15 +54,18 @@ def send_message(request):
     user_name =  request.data['user_name']
     room_link = request.data['room_link']
     message = request.data['message']
-    room = Room.objects.get(room_link=room_link)
-    user = User.objects.get(username=user_name)
-    #check if user is a member of the room
-    if user in room.members.all():
-        message = Message.objects.create(room=room, user=user, message=message)
-        serializer = MessageSerializer(message)
-        return Response({"Message Sent":serializer.data})
-    else:
-        return Response({"Error":"You are not a member of this room"})
+    try:
+        user = User.objects.get(username=user_name)
+        room = Room.objects.get(room_link=room_link)
+        #check if user is a member of the room
+        if user in room.members.all():
+            message = Message.objects.create(room=room, user=user, message=message)
+            serializer = MessageSerializer(message)
+            return Response({"Message Sent":serializer.data})
+        else:
+            return Response({"Error":"User is not a member of the room"})
+    except:
+        return Response({"Error":"User or Room does not exist"})
 
 
 #view to get all messages in a room
@@ -66,12 +73,13 @@ def send_message(request):
 @api_view(['GET'])
 def get_messages(request):
     room_link = request.data['room_link']
-    room = Room.objects.get(room_link=room_link)
-    messages = Message.objects.filter(room=room)
-
-    serializer = MessageSerializer(messages, many=True)
-
-    return Response({"Messages":serializer.data})
+    try:
+        room = Room.objects.get(room_link=room_link)
+        messages = Message.objects.filter(room=room)
+        serializer = MessageSerializer(messages, many=True)
+        return Response({"Messages":serializer.data})
+    except:
+        return Response({"Error":"Room does not exist"})
 
 
 #get room details
@@ -79,11 +87,11 @@ def get_messages(request):
 @api_view(['GET'])
 def get_room(request):
     room_link = request.data['room_link']
-    room = Room.objects.get(room_link=room_link)
-    if room.exists():
+    try:
+        room = Room.objects.get(room_link=room_link)
         serializer = RoomSerializer(room)
         return Response({"Room Details":serializer.data})
-    else:
+    except:
         return Response({"Error":"Room does not exist"})
 
 
@@ -92,7 +100,35 @@ def get_room(request):
 @api_view(['GET'])
 def get_rooms(request):
     rooms = Room.objects.all()
-
     serializer = RoomSerializer(rooms, many=True)
-
     return Response({"Rooms":serializer.data})
+
+#get all data from the database and send to the dowell remote mongodb server
+@csrf_exempt
+@api_view(['GET'])
+def chat_end(request):
+    room_link = request.data['room_link']
+    room = Room.objects.get(room_link=room_link)
+    messages = Message.objects.filter(room=room)
+    # rooms = Room.objects.all()
+    # messages = Message.objects.all()
+    serializer = RoomSerializer(room)
+    serializer1 = MessageSerializer(messages, many=True)
+
+    data = {
+        "rooms":serializer.data,
+        "messages":serializer1.data
+    }
+
+    command = "insert"
+    eventId = get_event_id()
+    output = connection(command,eventId,data)
+
+    return Response({"New Chat Created":output})
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_chat_server(request):
+    resp = targeted_population("hr_hiring","dowelltraining",["data"],"life_time")
+    return Response(resp['normal']['data'][0])
