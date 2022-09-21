@@ -18,7 +18,8 @@ from .population import targeted_population
 @api_view(['POST'])
 def create_room(request):
     user_name =  request.data['user_name']
-    admin_name = User.objects.get(username='admin')
+    #admin_name = User.objects.get(username='admin')
+    admin_name = User.objects.filter(is_superuser=True).first()
     room_name = f"{user_name}_{admin_name}_{uuid.uuid4().hex[:6].upper()}"
     room_link = str(uuid.uuid4())
     #check if user exists
