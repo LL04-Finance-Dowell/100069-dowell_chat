@@ -71,7 +71,7 @@ def send_message(request):
 
 #view to get all messages in a room
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def get_messages(request):
     room_link = request.data['room_link']
     try:
@@ -85,7 +85,7 @@ def get_messages(request):
 
 #get room details
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def get_room(request):
     room_link = request.data['room_link']
     try:
@@ -98,7 +98,7 @@ def get_room(request):
 
 #get all rooms
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def get_rooms(request):
     rooms = Room.objects.all()
     serializer = RoomSerializer(rooms, many=True)
@@ -106,7 +106,7 @@ def get_rooms(request):
 
 #get all data from the database and send to the dowell remote mongodb server
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def chat_end(request):
     room_link = request.data['room_link']
     room = Room.objects.get(room_link=room_link)
