@@ -8,7 +8,7 @@ class RoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['room_name', 'admin_name', 'user_name', 'room_link', 'members']
+        fields = ['room_name', 'admin_name', 'user_name', 'room_link', 'members','sessionId']
 
 class MessageSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
