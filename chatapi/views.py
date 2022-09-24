@@ -18,19 +18,28 @@ from .population import targeted_population
 @api_view(['POST'])
 def create_room(request):
     user_name =  request.data['user_name']
+    session_id = request.data['sessionId']
     #admin_name = User.objects.get(username='admin')
     admin_name = User.objects.filter(is_superuser=True).first()
-    room_name = f"{user_name}_{admin_name}_{uuid.uuid4().hex[:6].upper()}"
-    room_link = str(uuid.uuid4())
-    #check if user exists
-    try:
+    room_name = f"{user_name}_{admin_name} Room"
+    room_link = str(uuid.uuid4())[0:6]
+    print(user_name,admin_name,room_name,room_link,session_id)
+  
+    try: 
         user = User.objects.get(username=user_name)
-        room = Room.objects.create(room_name=room_name, admin_name=admin_name, user_name=user_name, room_link=room_link)
-        serializer = RoomSerializer(room)
-        return Response({"New Room Created":serializer.data})
     except:
-        return Response({"Error":"User does not exist"})
-
+        #create a new user
+        user = User.objects.create_user(username=user_name)
+    
+    try:
+        room = Room.objects.get(sessionId=session_id)
+        serializer = RoomSerializer(room)
+        return Response(serializer.data)
+    except:
+        #create room
+        room = Room.objects.create(room_name=room_name,admin_name=admin_name,user_name=user,room_link=room_link,sessionId=session_id)
+        serializer = RoomSerializer(room)
+        return Response(serializer.data)
 
 
 #add new member to the room
@@ -44,7 +53,7 @@ def add_member(request):
         user = User.objects.get(username=user_name)
         room.add_members(user)
         serializer = RoomSerializer(room)
-        return Response({"New Member Added":serializer.data})
+        return Response(serializer.data)
     except:
         return Response({"Error":"User or Room does not exist"})
 
@@ -78,7 +87,7 @@ def get_messages(request):
         room = Room.objects.get(room_link=room_link)
         messages = Message.objects.filter(room=room)
         serializer = MessageSerializer(messages, many=True)
-        return Response({"Messages":serializer.data})
+        return Response({"Messages":serializer.data,'room_link':room_link,'room_name':room.room_name})
     except:
         return Response({"Error":"Room does not exist"})
 
@@ -91,7 +100,7 @@ def get_room(request):
     try:
         room = Room.objects.get(room_link=room_link)
         serializer = RoomSerializer(room)
-        return Response({"Room Details":serializer.data})
+        return Response(serializer.data)
     except:
         return Response({"Error":"Room does not exist"})
 
@@ -102,7 +111,7 @@ def get_room(request):
 def get_rooms(request):
     rooms = Room.objects.all()
     serializer = RoomSerializer(rooms, many=True)
-    return Response({"Rooms":serializer.data})
+    return Response(serializer.data)
 
 #get all data from the database and send to the dowell remote mongodb server
 @csrf_exempt

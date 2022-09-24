@@ -4,16 +4,17 @@ from django.contrib.auth.models import User
 
 
 class Room(models.Model):
-    room_name = models.CharField(max_length=255, unique=True)
-    admin_name = models.CharField(max_length=255)
-    user_name = models.CharField(max_length=255)
-    room_link = models.CharField(max_length=255, unique=True)
+    room_name = models.CharField(max_length=255)
+    admin_name = models.ForeignKey(User, on_delete=models.CASCADE, related_name='admin')
+    user_name = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
+    room_link = models.CharField(max_length=255)
     members = models.ManyToManyField(User, related_name='members')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    sessionId = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.room_name
+        return f"{self.room_name} - {self.room_link}"
     
     def get_absolute_url(self):
         return reverse('room_detail', args=[str(self.id)])
