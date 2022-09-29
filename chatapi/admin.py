@@ -1,6 +1,24 @@
 from django.contrib import admin
-from .models import Room, Message
+from .models import Room, Message,User
 # Register your models here.
 
-admin.site.register(Room)
-admin.site.register(Message)
+class RoomAdmin(admin.ModelAdmin):
+    list_display = ('room_name','created_at')
+    list_filter = ('room_name','created_at')
+    search_fields = ('room_name','created_at' )
+
+admin.site.register(Room,RoomAdmin)
+
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('room','sender','receiver','message','timestamp')
+    list_filter = ('room','sender','receiver','message','timestamp')
+    search_fields = ('room','sender','receiver','message','timestamp')
+
+admin.site.register(Message,MessageAdmin)
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'role' ,'is_staff')
+    list_filter = ('username', 'role' ,'is_staff')
+    search_fields = ('username', 'role' ,'is_staff')
+
+admin.site.register(User, UserAdmin)

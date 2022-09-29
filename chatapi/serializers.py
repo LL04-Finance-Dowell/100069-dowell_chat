@@ -1,18 +1,17 @@
 from rest_framework import serializers
-from .models import Room, Message
+from .models import Room, Message,User
 
 class RoomSerializer(serializers.ModelSerializer):
-    admin_name = serializers.ReadOnlyField(source='admin_name.username')
-    user_name = serializers.ReadOnlyField(source='user_name.username')
     members = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Room
-        fields = ['room_name', 'admin_name', 'user_name', 'room_link', 'members','sessionId']
+        fields = ['room_name', 'members']
 
 class MessageSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
     room = serializers.ReadOnlyField(source='room.room_name')
+    sender = serializers.ReadOnlyField(source='sender.username')
+    receiver = serializers.ReadOnlyField(source='receiver.username')
     class Meta:
         model = Message
-        fields = ['room', 'user', 'message']
+        fields = ['room','sender','receiver','message']
