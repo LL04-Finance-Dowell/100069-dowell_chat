@@ -9,6 +9,6 @@ urlpatterns = [
     path('get-messages/', views.get_messages, name='get_messages'),
     path('get-room/', views.get_room, name='get_room'),
     path('get-rooms/', views.get_rooms, name='get_rooms'),
-    path('end-chat/', views.chat_end, name='end-chat'),
-    path('get-chat/', views.get_chat_server, name='get-chat'),
+    # path('end-chat/', views.chat_end, name='end-chat'),
+    # path('get-chat/', views.get_chat_server, name='get-chat'),
 ]
