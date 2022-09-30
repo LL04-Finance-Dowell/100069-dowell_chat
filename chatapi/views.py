@@ -66,15 +66,15 @@ def add_member(request):
 def send_message(request):
     room =  request.data['room']
     sender =  request.data['sender']
-    receiver = request.data['receiver']
+    #receiver = request.data['receiver']
     message = request.data['message']
-    print(room,sender,receiver,message)
+    print(room,sender,message)
     sender = User.objects.get(username=sender)
-    receiver = User.objects.get(username=receiver)
+    #receiver = User.objects.get(username=receiver)
     room = Room.objects.get(room_name=room)
     #check if user is a member of the room
     if sender in room.members.all():
-        message = Message.objects.create(room=room, sender=sender,receiver=receiver, message=message)
+        message = Message.objects.create(room=room, sender=sender, message=message)
         serializer = MessageSerializer(message)
         return Response(serializer.data)
     else:
@@ -86,10 +86,12 @@ def send_message(request):
 @csrf_exempt
 @api_view(['GET','POST'])
 def get_messages(request):
+    print("get messages")
     room = request.data['room']
+    print("room: ", room)
     try:
         room = Room.objects.get(room_name=room)
-        messages = Message.objects.filter(room=room)
+        messages = Message.objects.filter(room=room).order_by('timestamp')
         serializer = MessageSerializer(messages, many=True)
         return Response(serializer.data)
     except:
@@ -116,6 +118,7 @@ def get_room(request):
 @api_view(['GET','POST'])
 def get_rooms(request):
     all_rooms = Room.objects.all()
+    #print(all_rooms)
     user_name = request.data['user_name']
     role = request.data['role']
     try:

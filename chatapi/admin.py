@@ -10,9 +10,9 @@ class RoomAdmin(admin.ModelAdmin):
 admin.site.register(Room,RoomAdmin)
 
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('room','sender','receiver','message','timestamp')
-    list_filter = ('room','sender','receiver','message','timestamp')
-    search_fields = ('room','sender','receiver','message','timestamp')
+    list_display = ('room','sender','message','timestamp')
+    list_filter = ('room','sender','message','timestamp')
+    search_fields = ('room','sender','message','timestamp')
 
 admin.site.register(Message,MessageAdmin)
 
