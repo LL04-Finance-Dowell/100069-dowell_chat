@@ -11,7 +11,7 @@ class RoomSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     room = serializers.ReadOnlyField(source='room.room_name')
     sender = serializers.ReadOnlyField(source='sender.username')
-    receiver = serializers.ReadOnlyField(source='receiver.username')
+    # receiver = serializers.ReadOnlyField(source='receiver.username')
     class Meta:
         model = Message
-        fields = ['room','sender','receiver','message']
+        fields = ['room','sender','message']
