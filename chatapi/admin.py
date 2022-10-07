@@ -17,8 +17,8 @@ class MessageAdmin(admin.ModelAdmin):
 admin.site.register(Message,MessageAdmin)
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'role' ,'is_staff')
-    list_filter = ('username', 'role' ,'is_staff')
-    search_fields = ('username', 'role' ,'is_staff')
+    list_display = ('username', 'role' ,'is_staff','product')
+    list_filter = ('username', 'role' ,'is_staff','product')
+    search_fields = ('username', 'role' ,'is_staff','product')
 
 admin.site.register(User, UserAdmin)

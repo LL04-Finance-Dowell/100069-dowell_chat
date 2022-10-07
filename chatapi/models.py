@@ -3,15 +3,23 @@ from django.urls import reverse
 #from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 
+
+        
 #custom user model
 class User(AbstractUser):
     choices = (
         ('Admin','Admin'),
         ('User','User'),
-        ('Proj_Lead','Proj_Lead'),
+        ('Proj_lead','Proj_lead'),
+    )
+    products = (
+        ('WorkflowAi','WorkflowAi'),
+        ('DigitalQ','DigitalQ'),
+        ('DowellChat','DowellChat'),
     )
     role = models.CharField(max_length=10,choices=choices)
-
+    product = models.CharField(max_length=20,choices=products)
+    
     def __str__(self):
         return self.username
 
