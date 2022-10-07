@@ -19,14 +19,15 @@ from .population import targeted_population
 def create_room(request):
     user_name =  request.data['user_name']
     qrid = request.data['qrid']
-    proj_lead = User.objects.filter(role='Proj_Lead').first()
+    product = request.data['product']
+    proj_lead = User.objects.filter(role='Proj_Lead').filter(product=product).first()
     room_name = f"{user_name}_{qrid}"
-    print(user_name,qrid,room_name,proj_lead)
+    print(user_name,qrid,product,room_name,proj_lead)
     try: 
-        user = User.objects.get(username=user_name)
+        user = User.objects.filter(Q(username=user_name) & Q(product=product)).first()
     except:
         #create a new user
-        user = User.objects.create_user(username=user_name,role='User')
+        user = User.objects.create_user(username=user_name,role='User',product=product)
     
     try:
         room = Room.objects.get(room_name=room_name)
@@ -117,24 +118,39 @@ def get_room(request):
 @csrf_exempt
 @api_view(['GET','POST'])
 def get_rooms(request):
-    all_rooms = Room.objects.all()
+    # all_rooms = Room.objects.all()
     #print(all_rooms)
-    user_name = request.data['user_name']
+    user_name = request.data['user_name']  #example: ProductName_UserName 
     role = request.data['role']
+    #split the user_name to get the product name
+    product = user_name.split('_')[0]
+    print("Product Name :", product)
+    print("User Name :", user_name)
+    print("Role :", role)
+    #all rooms for the user with the role of Proj_lead and product name
+    if role == 'Proj_lead':
+        all_rooms = Room.objects.filter(members__username__contains=user_name)
+        print(all_rooms)
+        serializer = RoomSerializer(all_rooms, many=True)
+        return Response(serializer.data)
+    else:
+        return Response({"Error":"User is not a Project Lead"})
+
     try:
         user = User.objects.get(username=user_name)
         #check user role
-        if user.role == 'Proj_Lead':
+        if user.role == 'Proj_lead':
             if all_rooms:
                 serializer = RoomSerializer(all_rooms, many=True)
                 return Response(serializer.data)
             else:
                 return Response({"Error":"No rooms exist"})
     except:
-        #create a new user with role
-        user = User.objects.create_user(username=user_name,role=role)
-        serializer = RoomSerializer(all_rooms, many=True)
-        return Response(serializer.data)
+        # #create a new user with role
+        # user = User.objects.create_user(username=user_name,role=role,product=product)
+        # serializer = RoomSerializer(all_rooms, many=True)
+        # return Response(serializer.data)
+        return Response({"Error":"User does not exist"})
  
 #get all data from the database and send to the dowell remote mongodb server
 @csrf_exempt
