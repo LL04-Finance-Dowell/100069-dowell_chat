@@ -20,7 +20,7 @@ def create_room(request):
     user_name =  request.data['user_name']
     qrid = request.data['qrid']
     product = request.data['product']
-    proj_lead = User.objects.filter(role='Proj_Lead').filter(product=product).first()
+    proj_lead = User.objects.filter(role='Proj_lead').filter(product=product).first()
     room_name = f"{user_name}_{qrid}"
     print(user_name,qrid,product,room_name,proj_lead)
     try: 
