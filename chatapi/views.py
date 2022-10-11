@@ -9,7 +9,7 @@ import uuid
 from .models import Room, Message,User
 from .serializers import RoomSerializer, MessageSerializer
 
-from .connection import connection,get_event_id
+from .connection import connection_room,connection_chats,get_event_id
 from .population import targeted_population
 
 #view to create a new room with a unique room link with admin
@@ -155,29 +155,38 @@ def get_rooms(request):
 #get all data from the database and send to the dowell remote mongodb server
 @csrf_exempt
 @api_view(['GET','POST'])
-def chat_end(request):
-    room_link = request.data['room_link']
-    room = Room.objects.get(room_link=room_link)
+def end_chat(request):
+    room = request.data['room']
+    room = Room.objects.get(room_name=room)
+    print(room)
     messages = Message.objects.filter(room=room)
-    # rooms = Room.objects.all()
-    # messages = Message.objects.all()
-    serializer = RoomSerializer(room)
-    serializer1 = MessageSerializer(messages, many=True)
+    print(messages)
+    serializer_room = RoomSerializer(room)
+    serializer_chats = MessageSerializer(messages, many=True)
 
-    data = {
-        "rooms":serializer.data,
-        "messages":serializer1.data
+    data_room = {
+        "rooms":serializer_room.data,
+    }
+    data_chats = {
+        "messages":serializer_chats.data
     }
 
     command = "insert"
-    eventId = get_event_id()
-    output = connection(command,eventId,data)
+    eventId1 = get_event_id()
+    output_room = connection_room(command,eventId=eventId1,data=data_room)
 
-    return Response({"New Chat Created":output})
+    eventId2 = get_event_id()
+    output_chats = connection_chats(command,eventId=eventId2,data=data_chats)
+
+    return Response({"output_room":output_room,"output_chats":output_chats})
+    
 
 
 @csrf_exempt
 @api_view(['GET'])
 def get_chat_server(request):
-    resp = targeted_population("hr_hiring","dowelltraining",["data"],"life_time")
-    return Response(resp['normal']['data'][0])
+    resp_room = targeted_population("chat","rooms",["data"],"life_time")
+    resp_chats = targeted_population("chat","chats",["data"],"life_time")
+    return Response({"resp_room":resp_room,"resp_chats":resp_chats})
+
+    #return Response(resp['normal']['data'][0])
