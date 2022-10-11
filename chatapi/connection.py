@@ -42,16 +42,43 @@ def get_event_id():
         return r.text  
 
 
-def connection(command=None,eventId=None,data=None):
+def connection_room(command=None,eventId=None,data=None):
 
     url = "http://100002.pythonanywhere.com/" 
     #searchstring="ObjectId"+"("+"'"+"6139bd4969b0c91866e40551"+"'"+")"
     payload = json.dumps({
-        "cluster": "hr_hiring",
-        "database": "hr_hiring",
-        "collection": "dowelltraining",
-        "document": "dowelltraining",
-        "team_member_ID": "1000554",
+        "cluster": "chat",
+        "database": "chat",
+        "collection": "rooms",
+        "document": "rooms",
+        "team_member_ID": "1091",
+        "function_ID": "ABCDE",
+        "command": command,
+        "field": {
+            "eventId" : eventId,
+            "data": data,
+            },
+        "update_field": {
+            "order_nos": 21
+            },
+        "platform": "bangalore"
+        })
+    headers = {
+        'Content-Type': 'application/json'
+        }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return response.text
+
+def connection_chats(command=None,eventId=None,data=None):
+
+    url = "http://100002.pythonanywhere.com/" 
+    #searchstring="ObjectId"+"("+"'"+"6139bd4969b0c91866e40551"+"'"+")"
+    payload = json.dumps({
+        "cluster": "chat",
+        "database": "chat",
+        "collection": "chats",
+        "document": "chats",
+        "team_member_ID": "10006902",
         "function_ID": "ABCDE",
         "command": command,
         "field": {
