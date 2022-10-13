@@ -73,15 +73,18 @@ def send_message(request):
     sender = User.objects.get(username=sender)
     #receiver = User.objects.get(username=receiver)
     room = Room.objects.get(room_name=room)
-    #check if user is a member of the room
-    if sender in room.members.all():
-        message = Message.objects.create(room=room, sender=sender, message=message)
-        serializer = MessageSerializer(message)
-        return Response(serializer.data)
+    #check of room is active or not
+    if room.is_active:
+        #check if user is a member of the room
+        if sender in room.members.all():
+            message = Message.objects.create(room=room, sender=sender, message=message)
+            serializer = MessageSerializer(message)
+            return Response({"message":serializer.data,"status":"success"})
+        else:
+            return Response({"Error":"User is not a member of the room"})
+
     else:
-        return Response({"Error":"User is not a member of the room"})
-
-
+        return Response({"Error":"This Room is not active"})
 
 #view to get all messages in a room
 @csrf_exempt
@@ -159,6 +162,15 @@ def end_chat(request):
     room = request.data['room']
     room = Room.objects.get(room_name=room)
     print(room)
+
+    #make current room inactive
+    room.is_active = False
+    room.save()
+
+    #send signal that chat has ended
+    #send_message(room, 'ChatBot', 'Chat has ended')
+
+
     messages = Message.objects.filter(room=room)
     print(messages)
     serializer_room = RoomSerializer(room)
@@ -173,12 +185,13 @@ def end_chat(request):
 
     command = "insert"
     eventId1 = get_event_id()
-    output_room = connection_room(command,eventId=eventId1,data=data_room)
+    #output_room = connection_room(command,eventId=eventId1,data=data_room)
 
     eventId2 = get_event_id()
-    output_chats = connection_chats(command,eventId=eventId2,data=data_chats)
+    #output_chats = connection_chats(command,eventId=eventId2,data=data_chats)
 
-    return Response({"output_room":output_room,"output_chats":output_chats})
+    #return Response({"output_room":output_room,"output_chats":output_chats})
+    return Response({"msg":'Chat has ended'})
     
 
 

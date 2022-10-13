@@ -28,6 +28,8 @@ class Room(models.Model):
     members = models.ManyToManyField(User, related_name='members')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
 
     def __str__(self):
         return f"{self.room_name}"
