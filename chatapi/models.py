@@ -16,6 +16,8 @@ class User(AbstractUser):
         ('WorkflowAi','WorkflowAi'),
         ('DigitalQ','DigitalQ'),
         ('DowellChat','DowellChat'),
+        ('WifiQrCode','WifiQrCode'),
+        ('UxLive','UxLive'),
     )
     role = models.CharField(max_length=10,choices=choices)
     product = models.CharField(max_length=20,choices=products)
